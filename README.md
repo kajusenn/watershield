@@ -1,13 +1,8 @@
-# Watermark App (Flutter)
+# Watermark App (Flutter) NOT FOR DOWNLOAD OR COPY
+# made with AI
 
 Aplikacja do nakładania watermarków (tekst, logo, tekst+logo) na obrazy i PDF.  
 Przepisana z oryginalnego projektu Python/Kivy. Działa na **Windows** i **Android**.
-
-## Wymagania
-
-- [Flutter SDK](https://docs.flutter.dev/get-started/install) 3.22+
-- Windows: Visual Studio 2022 z „Desktop development with C++”
-- Android: Android Studio + SDK
 
 ## Pierwsze uruchomienie
 
@@ -37,12 +32,34 @@ flutter build apk --release
 
 Plik wynikowy: `build/app/outputs/flutter-apk/app-release.apk`
 
-## Użycie
+##debug
 
-1. **FILES** — dodaj pliki (JPG, PNG, WEBP, BMP, TIFF, PDF). Kliknij miniaturę, aby powiększyć i załadować podgląd.
-2. **SETTINGS** — typ watermarku, tryb (corner/tile), suwaki, kolor, logo.
-3. **PREVIEW** — podgląd na żywo (opóźnienie ~0,35 s). Dla PDF: nawigacja ◀ ▶.
-4. **Generate / Export** — zapis do folderu `output/` z sufiksem `_watermarked`.
+Czyszczenie
+flutter clean
+
+Pobieranie zależności
+flutter pub get
+
+Budowanie APK (DEBUG - do testów)
+flutter build apk --debug
+
+Budowanie APK (RELEASE - do instalacji)
+flutter build apk --release
+
+Uruchom na telefonie (debug)
+flutter run
+
+Uruchom na telefonie z konkretnym urządzeniem
+flutter run -d RZCYA0K7FZP  # Twój telefon
+
+## FOR ME
+
+flutter clean
+flutter pub get
+flutter build apk --release
+
+APK w: build/app/outputs/flutter-apk/app-release.apk
+
 
 ## Konfiguracja logo
 

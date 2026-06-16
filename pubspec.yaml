@@ -1,0 +1,27 @@
+name: watershield
+description: Watermark tool for images and PDF - Windows & Android.
+publish_to: 'none'
+version: 1.0.0
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  provider: ^6.1.2
+  file_selector: ^0.9.0  # ← DODAJ TO
+  path_provider: ^2.1.5
+  path: ^1.9.1
+  image: ^4.5.2
+  pdf: ^3.11.2
+  printing: ^5.14.2
+  syncfusion_flutter_pdf: ^28.2.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true

@@ -1,4 +1,4 @@
-# Watermark App (Flutter)
+# Watermark App (Flutter). NOT TO DOWNLOAD OR COPY
 
 Aplikacja do nakładania watermarków (tekst, logo, tekst+logo) na obrazy i PDF.  
 Przepisana z oryginalnego projektu Python/Kivy. Działa na **Windows** i **Android**.

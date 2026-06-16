@@ -7,7 +7,7 @@
     <!-- ⬆️ KONIEC DODATKU ⬆️ -->
 
     <application
-        android:label="watershield"
+        android:label="WaterShield"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:requestLegacyExternalStorage="true">  <!-- ⬅️ DODAJ TĘ LINIĘ -->

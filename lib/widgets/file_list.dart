@@ -121,8 +121,9 @@ Future<void> _pickFiles() async {
                       )
                     : GridView.builder(
                         padding: const EdgeInsets.all(6),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount:
+                            MediaQuery.of(context).size.width < 600 ? 2 : 3,
                           crossAxisSpacing: 6,
                           mainAxisSpacing: 6,
                           childAspectRatio: 0.85,

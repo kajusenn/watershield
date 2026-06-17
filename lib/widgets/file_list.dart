@@ -28,26 +28,75 @@ class FileList extends StatefulWidget {
 class _FileListState extends State<FileList> {
   String? _expandedPath;
 
-Future<void> _pickFiles() async {
-  const group = XTypeGroup(
-    label: 'Images & PDF',
-    extensions: ['jpg', 'jpeg', 'png', 'bmp', 'webp', 'tiff', 'pdf'],
-  );
-  
-  final result = await openFiles(acceptedTypeGroups: [group]);
-  if (result == null || result.isEmpty) return;
-  
-  final paths = FileService.filterSupportedFiles(
-    result.map((xfile) => xfile.path).whereType<String>().toList(),
-  );
-  if (paths.isEmpty) return;
+  Future<void> _pickFilesOfKind(String kind) async {
+    final group = kind == 'pdf'
+        ? const XTypeGroup(
+            label: 'PDF',
+            extensions: ['pdf'],
+          )
+        : const XTypeGroup(
+            label: 'Images',
+            extensions: ['jpg', 'jpeg', 'png', 'bmp', 'webp', 'tiff'],
+          );
 
-  final app = context.read<AppModel>();
-  app.addFiles(paths);
-  for (final path in paths) {
-    _loadThumb(path);
+    final result = await openFiles(acceptedTypeGroups: [group]);
+    if (result.isEmpty) return;
+
+    final paths = FileService.filterSupportedFiles(
+      result.map((xfile) => xfile.path).whereType<String>().toList(),
+    );
+    if (paths.isEmpty) return;
+
+    final app = context.read<AppModel>();
+    app.addFiles(paths);
+    for (final path in paths) {
+      _loadThumb(path);
+    }
   }
-}
+
+  Future<void> _showPickTypeDialog() async {
+    final app = context.read<AppModel>();
+    final currentKind = app.fileKind;
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.card,
+        title: const Text('Choose file type',
+            style: TextStyle(color: AppColors.fg, fontSize: 13)),
+        content: Text(
+          currentKind == null
+              ? 'Pick only one type at a time.'
+              : currentKind == 'image'
+                  ? 'You already loaded images. Clear them first to switch to PDF.'
+                  : 'You already loaded PDFs. Clear them first to switch to images.',
+          style: const TextStyle(color: AppColors.fg2, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: currentKind == null || currentKind == 'image'
+                ? () {
+                    Navigator.pop(ctx);
+                    _pickFilesOfKind('image');
+                  }
+                : null,
+            child: const Text('Photos',
+                style: TextStyle(color: AppColors.accent)),
+          ),
+          TextButton(
+            onPressed: currentKind == null || currentKind == 'pdf'
+                ? () {
+                    Navigator.pop(ctx);
+                    _pickFilesOfKind('pdf');
+                  }
+                : null,
+            child: const Text('PDF',
+                style: TextStyle(color: AppColors.accent)),
+          ),
+        ],
+      ),
+    );
+  }
 
   Future<void> _loadThumb(String path) async {
     final bytes = await widget.controller.loadThumbnail(path);
@@ -87,7 +136,7 @@ Future<void> _pickFiles() async {
                       child: WmPrimaryButton(
                         label: '＋  Add Files',
                         height: 36,
-                        onPressed: _pickFiles,
+                        onPressed: _showPickTypeDialog,
                       ),
                     ),
                     const SizedBox(width: 6),

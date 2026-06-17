@@ -147,43 +147,98 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Row(
-        children: [
-          Expanded(
-            flex: 30,
-            child: FileList(
-              controller: widget.controller,
-              onSelectionChanged: _schedulePreview,
-            ),
-          ),
-          const VerticalDivider(width: 1, color: AppColors.border),
-          Expanded(
-            flex: 33,
-            child: SettingsPanel(
-              controller: widget.controller,
-              onSettingsChanged: _schedulePreview,
-              onExport: _onExport,
-            ),
-          ),
-          const VerticalDivider(width: 1, color: AppColors.border),
-          Expanded(
-            flex: 37,
-            child: PreviewPanel(
-              onPrevPage: () {
-                context.read<AppModel>().setPdfPageIndex(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isMobile = constraints.maxWidth < 900;
+
+          if (isMobile) {
+            return DefaultTabController(
+              length: 3,
+              child: Column(
+                children: [
+                  const Material(
+                    color: AppColors.card,
+                    child: TabBar(
+                      tabs: [
+                        Tab(text: 'FILES'),
+                        Tab(text: 'SETTINGS'),
+                        Tab(text: 'PREVIEW'),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: TabBarView(
+                      children: [
+                        FileList(
+                          controller: widget.controller,
+                          onSelectionChanged: _schedulePreview,
+                        ),
+                        SettingsPanel(
+                          controller: widget.controller,
+                          onSettingsChanged: _schedulePreview,
+                          onExport: _onExport,
+                        ),
+                        PreviewPanel(
+                          onPrevPage: () {
+                            context.read<AppModel>().setPdfPageIndex(
+                              context.read<AppModel>().pdfPageIndex - 1,
+                            );
+                            _schedulePreview();
+                          },
+                          onNextPage: () {
+                            context.read<AppModel>().setPdfPageIndex(
+                              context.read<AppModel>().pdfPageIndex + 1,
+                            );
+                            _schedulePreview();
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return Row(
+            children: [
+              Expanded(
+                flex: 30,
+                child: FileList(
+                  controller: widget.controller,
+                  onSelectionChanged: _schedulePreview,
+                ),
+              ),
+              const VerticalDivider(width: 1, color: AppColors.border),
+              Expanded(
+                flex: 33,
+                child: SettingsPanel(
+                  controller: widget.controller,
+                  onSettingsChanged: _schedulePreview,
+                  onExport: _onExport,
+                ),
+              ),
+              const VerticalDivider(width: 1, color: AppColors.border),
+              Expanded(
+                flex: 37,
+                child: PreviewPanel(
+                  onPrevPage: () {
+                    context.read<AppModel>().setPdfPageIndex(
                       context.read<AppModel>().pdfPageIndex - 1,
                     );
-                _schedulePreview();
-              },
-              onNextPage: () {
-                context.read<AppModel>().setPdfPageIndex(
+                    _schedulePreview();
+                  },
+                  onNextPage: () {
+                    context.read<AppModel>().setPdfPageIndex(
                       context.read<AppModel>().pdfPageIndex + 1,
                     );
-                _schedulePreview();
-              },
-            ),
-          ),
-        ],
+                    _schedulePreview();
+                  },
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

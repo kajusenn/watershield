@@ -71,78 +71,99 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _onExport() async {
-    final app = context.read<AppModel>();
-    final settings = context.read<SettingsModel>();
-    final paths = app.files.map((f) => f.path).toList();
+Future<void> _onExport() async {
+  final app = context.read<AppModel>();
+  final settings = context.read<SettingsModel>();
+  final paths = app.files.map((f) => f.path).toList();
 
-    if (paths.isEmpty) {
-      showWmDialog(
-        context,
-        "No files loaded.\nClick '＋ Add Files' to get started.",
-      );
-      return;
-    }
-    if (settings.wmType == 'text' && settings.text.trim().isEmpty) {
-      showWmDialog(context, 'Watermark text is empty.');
-      return;
-    }
-    if ((settings.wmType == 'logo' || settings.wmType == 'logo_text') &&
-        (settings.logoPath == null || settings.logoPath!.isEmpty)) {
-      showWmDialog(
-        context,
-        "No logo selected.\nClick '📂 Choose Logo' to pick one.",
-      );
-      return;
-    }
-
-    app.setExportState(
-      exporting: true,
-      progress: 0,
-      status: 'Working…',
-      color: AppColors.dim,
+  if (paths.isEmpty) {
+    showWmDialog(
+      context,
+      "No files loaded.\nClick '＋ Add Files' to get started.",
     );
+    return;
+  }
 
-    try {
-      await widget.controller.exportFiles(
-        paths: paths,
-        settings: settings,
-        onProgress: (p) {
-          app.setExportState(
-            exporting: true,
-            progress: p,
-            status: 'Working…',
-            color: AppColors.dim,
-          );
-        },
-        onStatus: (status, color) {
-          app.setExportState(
-            exporting: false,
-            progress: 1,
-            status: status,
-            color: color,
-          );
-        },
-      );
-      if (!mounted) return;
-      final outDir = await FileService.getOutputDirAbsolute();
-      showWmDialog(
-        context,
-        'Done!\n${paths.length} file(s) saved to:\n$outDir',
-      );
-    } on ExportException catch (e) {
-      if (mounted) showWmDialog(context, 'Errors:\n$e');
-    } finally {
-      if (mounted) {
+  if (settings.wmType == 'text' && settings.text.trim().isEmpty) {
+    showWmDialog(
+      context,
+      'Watermark text is empty.',
+    );
+    return;
+  }
+
+  if ((settings.wmType == 'logo' ||
+          settings.wmType == 'logo_text') &&
+      (settings.logoPath == null ||
+          settings.logoPath!.isEmpty)) {
+    showWmDialog(
+      context,
+      "No logo selected.\nClick '📂 Choose Logo' to pick one.",
+    );
+    return;
+  }
+
+  app.setExportState(
+    exporting: true,
+    progress: 0,
+    status: 'Working…',
+    color: AppColors.dim,
+  );
+
+  try {
+    await widget.controller.exportFiles(
+      paths: paths,
+      settings: settings,
+      onProgress: (p) {
+        app.setExportState(
+          exporting: true,
+          progress: p,
+          status: 'Working…',
+          color: AppColors.dim,
+        );
+      },
+      onStatus: (status, color) {
         app.setExportState(
           exporting: false,
-          progress: app.exportProgress,
-          status: app.statusText,
-          color: app.statusColor,
+          progress: 1,
+          status: status,
+          color: color,
         );
-      }
+      },
+    );
+
+    if (!mounted) return;
+
+    final allPdf = paths.every(
+      (p) => p.toLowerCase().endsWith('.pdf'),
+    );
+
+    final saveDir = allPdf
+        ? await FileService.getPdfDirAbsolute()
+        : await FileService.getImagesDirAbsolute();
+
+    showWmDialog(
+      context,
+      'Done!\n${paths.length} file(s) saved to:\n\n$saveDir',
+    );
+  } on ExportException catch (e) {
+    if (mounted) {
+      showWmDialog(
+        context,
+        'Errors:\n$e',
+      );
+    }
+  } finally {
+    if (mounted) {
+      app.setExportState(
+        exporting: false,
+        progress: app.exportProgress,
+        status: app.statusText,
+        color: app.statusColor,
+      );
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {

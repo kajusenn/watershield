@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -16,6 +18,18 @@ const supportedImageExtensions = {
 const supportedExtensions = {...supportedImageExtensions, '.pdf'};
 
 class FileService {
+  static const String _androidSaveRoot = '/storage/emulated/0/Download/WaterShield';
+
+  static const MethodChannel _mediaScanner =
+      MethodChannel('watershield/media_scanner');
+
+  static Future<void> scanFile(String path) async {
+    if (!Platform.isAndroid) return;
+    try {
+      await _mediaScanner.invokeMethod('scanFile', {'path': path});
+    } catch (_) {}
+  }
+
   static Future<String> get baseDir async {
     if (Platform.isAndroid || Platform.isIOS) {
       return (await getApplicationDocumentsDirectory()).path;
@@ -23,11 +37,27 @@ class FileService {
     return Directory.current.path;
   }
 
-  static Future<String> get outputDir async {
-    final dir = p.join(await baseDir, 'output');
-    await Directory(dir).create(recursive: true);
-    return dir;
+  static Future<String> get saveRootDir async {
+    final dir = Platform.isAndroid
+        ? Directory(_androidSaveRoot)
+        : Directory(p.join(await baseDir, 'output'));
+    await dir.create(recursive: true);
+    return dir.path;
   }
+
+  static Future<String> get imagesDir async {
+    final dir = Directory(p.join(await saveRootDir, 'fotos'));
+    await dir.create(recursive: true);
+    return dir.path;
+  }
+
+  static Future<String> get pdfDir async {
+    final dir = Directory(p.join(await saveRootDir, 'pdf'));
+    await dir.create(recursive: true);
+    return dir.path;
+  }
+
+  static Future<String> get outputDir async => saveRootDir;
 
   static Future<String> get configPath async =>
       p.join(await baseDir, 'config.json');
@@ -49,12 +79,16 @@ class FileService {
         : suffix == '.pdf'
             ? '.pdf'
             : '.png';
-    return p.join(await outputDir, '${stem}_watermarked$outSuffix');
+
+    final dir = suffix == '.pdf' ? await pdfDir : await imagesDir;
+    return p.join(dir, '${stem}_watermarked$outSuffix');
   }
 
   static String getFileDisplayName(String filePath) => p.basename(filePath);
 
-  static Future<String> getOutputDirAbsolute() async => await outputDir;
+  static Future<String> getOutputDirAbsolute() async => await saveRootDir;
+  static Future<String> getImagesDirAbsolute() async => await imagesDir;
+  static Future<String> getPdfDirAbsolute() async => await pdfDir;
 }
 
 class ConfigService {

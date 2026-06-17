@@ -10,8 +10,14 @@ class SelectedFile {
   bool loadingThumb = true;
 }
 
+enum FileKind {
+  image,
+  pdf,
+}
+
 class AppModel extends ChangeNotifier {
   final List<SelectedFile> files = [];
+
   String? selectedPath;
   int pdfPageIndex = 0;
   int pdfPageCount = 1;
@@ -25,23 +31,53 @@ class AppModel extends ChangeNotifier {
   String previewStatus = 'Select a file to preview';
   bool previewLoading = false;
 
+  FileKind? fileKind;
+
+  bool _isPdf(String path) {
+    return path.toLowerCase().endsWith('.pdf');
+  }
+
   void addFiles(List<String> paths) {
+    if (paths.isEmpty) return;
+
+    if (files.isNotEmpty && fileKind != null) {
+      paths = paths.where((path) {
+        if (fileKind == FileKind.pdf) {
+          return _isPdf(path);
+        }
+        return !_isPdf(path);
+      }).toList();
+    }
+
     final existing = files.map((f) => f.path).toSet();
-    for (final p in paths) {
-      if (!existing.contains(p)) {
-        files.add(SelectedFile(path: p));
+
+    for (final path in paths) {
+      if (!existing.contains(path)) {
+        files.add(SelectedFile(path: path));
       }
     }
+
+    if (files.isNotEmpty && fileKind == null) {
+      fileKind = _isPdf(files.first.path)
+          ? FileKind.pdf
+          : FileKind.image;
+    }
+
     notifyListeners();
   }
 
   void clearFiles() {
     files.clear();
+
     selectedPath = null;
     pdfPageIndex = 0;
     pdfPageCount = 1;
+
     previewBytes = null;
     previewStatus = 'Select a file to preview';
+
+    fileKind = null;
+
     notifyListeners();
   }
 
@@ -53,9 +89,11 @@ class AppModel extends ChangeNotifier {
 
   void setPdfPageCount(int count) {
     pdfPageCount = count.clamp(1, 99999);
+
     if (pdfPageIndex >= pdfPageCount) {
       pdfPageIndex = pdfPageCount - 1;
     }
+
     notifyListeners();
   }
 
@@ -65,10 +103,10 @@ class AppModel extends ChangeNotifier {
   }
 
   void setThumbnail(String path, Uint8List bytes) {
-    for (final f in files) {
-      if (f.path == path) {
-        f.thumbnailBytes = bytes;
-        f.loadingThumb = false;
+    for (final file in files) {
+      if (file.path == path) {
+        file.thumbnailBytes = bytes;
+        file.loadingThumb = false;
         notifyListeners();
         return;
       }
@@ -78,7 +116,11 @@ class AppModel extends ChangeNotifier {
   void setPreview(Uint8List? bytes, {String status = ''}) {
     previewBytes = bytes;
     previewLoading = false;
-    if (status.isNotEmpty) previewStatus = status;
+
+    if (status.isNotEmpty) {
+      previewStatus = status;
+    }
+
     notifyListeners();
   }
 
@@ -96,7 +138,11 @@ class AppModel extends ChangeNotifier {
     this.exporting = exporting;
     exportProgress = progress;
     statusText = status;
-    if (color != null) statusColor = color;
+
+    if (color != null) {
+      statusColor = color;
+    }
+
     notifyListeners();
   }
 }

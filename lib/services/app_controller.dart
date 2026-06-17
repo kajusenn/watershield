@@ -97,12 +97,15 @@ class AppController {
         final out = await FileService.buildOutputPath(path);
         if (p.extension(path).toLowerCase() == '.pdf') {
           await _pdf.processPdf(path, out, settings);
+          await FileService.scanFile(out);
         } else {
           await _watermark.processImage(
             inputPath: path,
             outputPath: out,
             settings: settings,
           );
+
+          await FileService.scanFile(out);
         }
       } catch (e) {
         errors.add('${FileService.getFileDisplayName(path)}: $e');
